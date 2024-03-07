@@ -1,0 +1,16 @@
+.wrapper {
+   display: flex;
+   gap: 20px;
+}
+
+.button {
+   padding: 5px;
+   background-color: #9fc1f3;
+   border-radius: 5px;
+   transition: all 0.3s ease;
+   font-size: 18px;
+}
+
+.button:hover {
+   background-color: #76abfa;
+}
