@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import css from './ContactForm.module.css';
 import { useId } from 'react';
 import { nanoid } from 'nanoid';
-
+import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { addContact } from '../../redux/contacts/operations';
 
@@ -17,28 +17,46 @@ const ContactForm = () => {
    const numberFieldId = useId();
    const dispatch = useDispatch();
 
+   const handleSubmit = (values, actions) => {
+      const { name, number } = values;
+      const isValid = contactSchema.isValidSync(values);
+      if (!isValid) {
+         toast.error('Please fill in all required fields correctly.');
+         return;
+      }
+
+      dispatch(addContact({ id: nanoid(), name, number }))
+         .unwrap()
+         .then(() => {
+            actions.resetForm();
+            toast.success('Contact added successfully', { id: 'contact-added' });
+         })
+         .catch(error => {
+            if (error.response && error.response.status === 404) {
+               toast.error('Error: Invalid URL. Please try again.');
+            } else {
+               toast.error('Invalid data. Please check your input and try again.');
+            }
+         });
+   };
+
    return (
       <Formik
          initialValues={{
             name: '',
             number: '',
          }}
-         validationSchema={contactSchema}
-         onSubmit={(values, actions) => {
-            console.log(values);
-            dispatch(addContact({ id: nanoid(), ...values }));
-            actions.resetForm();
-         }}
+         onSubmit={handleSubmit}
       >
          <Form className={css.form} autoComplete="off">
-            <div>
+            <div className={css.wrap}>
                <label htmlFor={nameFieldId} className={css.label}>
                   Name
                </label>
                <Field type="text" name="name" id={nameFieldId} className={css.input} />
-               <ErrorMessage className={css.error} name="name" component="span" />
+               <ErrorMessage className={css.errorMessage} name="name" component="span" />
             </div>
-            <div>
+            <div className={css.wrap}>
                <label htmlFor={numberFieldId} className={css.label}>
                   Number
                </label>
@@ -47,9 +65,9 @@ const ContactForm = () => {
                   name="number"
                   id={numberFieldId}
                   className={css.input}
-                  placeholder={+380994585577}
+                  placeholder={+380694682517}
                />
-               <ErrorMessage className={css.error} name="number" component="span" />
+               <ErrorMessage className={css.errorMessage} name="number" component="span" />
             </div>
             <button type="submit" className={css.button}>
                Add contact

@@ -14,26 +14,20 @@ const registerSchema = Yup.object().shape({
 
 const RegisterForm = () => {
    const dispatch = useDispatch();
-   const [password, setPassword] = useState('');
+   const [errorMessage, setErrorMessage] = useState('');
 
-   const handleSubmit = e => {
-      e.preventDefault();
-      const form = e.currentTarget;
-      dispatch(
-         register({
-            name: form.elements.name.value,
-            email: form.elements.email.value,
-            password: form.elements.password.value,
-         })
-      )
+   const handleSubmit = (values, actions) => {
+      dispatch(register(values))
          .unwrap()
          .then(() => {
             toast.success('Registered!');
          })
          .catch(() => {
-            toast.error('Fill in the fields!');
+            setErrorMessage('Fill in the fields!');
+         })
+         .finally(() => {
+            actions.setSubmitting(false);
          });
-      form.reset();
    };
 
    return (
@@ -44,32 +38,34 @@ const RegisterForm = () => {
             password: '',
          }}
          validationSchema={registerSchema}
+         onSubmit={handleSubmit}
       >
-         <Form className={css.form} onSubmit={handleSubmit} autoComplete="off">
-            <label className={css.label}>
-               <Field type="text" name="name" className={css.input} placeholder="Username" />
-               <ErrorMessage className={css.error} name="name" component="span" />
-            </label>
-            <label className={css.label}>
-               <Field type="email" name="email" className={css.input} placeholder="Email" />
-               <ErrorMessage className={css.error} name="email" component="span" />
-            </label>
-            <label className={css.label}>
-               <input
-                  type="password"
-                  name="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  className={css.input}
-                  placeholder="Password"
-               />
-               <ErrorMessage className={css.error} name="password" component="span" />
-            </label>
-            <button type="submit" className={css.button}>
-               Registration
-            </button>
-         </Form>
+         {({ isSubmitting }) => (
+            <Form className={css.form} autoComplete="off">
+               <label className={css.label}>
+                  <Field type="text" name="name" className={css.input} placeholder="Username" />
+                  <ErrorMessage className={css.error} name="name" component="span" />
+               </label>
+               <label className={css.label}>
+                  <Field type="email" name="email" className={css.input} placeholder="Email" />
+                  <ErrorMessage className={css.error} name="email" component="span" />
+               </label>
+               <label className={css.label}>
+                  <Field
+                     type="password"
+                     name="password"
+                     autoComplete="current-password"
+                     className={css.input}
+                     placeholder="Password"
+                  />
+                  <ErrorMessage className={css.error} name="password" component="span" />
+               </label>
+               {errorMessage && <span className={css.error}>{errorMessage}</span>}
+               <button type="submit" className={css.button} disabled={isSubmitting}>
+                  Registration
+               </button>
+            </Form>
+         )}
       </Formik>
    );
 };
